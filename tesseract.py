@@ -1,7 +1,8 @@
 import os
 import subprocess
+from derivatives import Derivatives
 
-class Tesseract():
+class Tesseract(Derivatives):
 
     def __init__(self, file_path):
         
@@ -18,18 +19,4 @@ class Tesseract():
         self.cmds = ["tesseract", self.file_path, self.output_basename, config_file]
         self.__run_cmds()
 
-    def __run_cmds(self):
-        
-        try:
-            process = subprocess.check_call(self.cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        except Exception as e:
-            print e
-
-        finally:
-            if process==0:
-                print "Text created at {0}".format(self.output_basename)
-
-            else:
-                print process 
 
