@@ -1,11 +1,12 @@
+import subprocess
 
 class Derivatives():
 
     def __init__(self):
         pass
 
-    def __run_cmds(self):
-        
+    def run_cmds(self):
+        process = 1
         try:
             process = subprocess.check_call(self.cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -17,4 +18,5 @@ class Derivatives():
                 print "Derivative created at {0}".format(self.output_basename)
 
             else:
-                print process 
+                print process
+        return process
