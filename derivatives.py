@@ -19,4 +19,5 @@ class Derivatives():
 
             else:
                 print process
+                
         return process

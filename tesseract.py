@@ -17,6 +17,6 @@ class Tesseract(Derivatives):
             self.output_basename = os.path.splitext(self.file_path)[0]
         
         self.cmds = ["tesseract", self.file_path, self.output_basename, config_file]
-        self.__run_cmds()
+        self.run_cmds()
 
 
