@@ -1,4 +1,6 @@
 import subprocess
+import os
+from ConfigParser import ConfigParser
 
 class Derivatives():
 
@@ -14,10 +16,28 @@ class Derivatives():
             print e
 
         finally:
-            if process==0:
-                print "Derivative created at {0}".format(self.output_basename)
-
-            else:
+            if process <> 0:
                 print process
+
                 
         return process
+
+    def get_configs(self):
+        
+        config = ConfigParser()
+        cwd = os.path.dirname(os.path.abspath(__file__))
+        config.read(os.path.join(cwd, "settings.cfg"))
+        for name, value in config.items(self.config_section):
+            setattr(self, name, value)
+
+
+    def print_process(self):
+
+        print "===Starting {0}".format(self.name)
+
+    def print_output(self):
+
+        if self.return_code == 0:
+            print "====={0} succeeded".format(self.name)
+        else:
+            print "====={0} failed".format(self.name)  

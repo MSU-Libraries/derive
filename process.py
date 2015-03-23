@@ -1,5 +1,6 @@
 from im import ImageMagickConverter
 from tesseract import Tesseract
+from fits import Fits
 import os
 
 class GrangeDerivatives():
@@ -12,7 +13,7 @@ class GrangeDerivatives():
         pass
 
 
-    def make_page_derivatives(self, tn=True, islandora_jpg=True, jpeg_high_quality=False, jpeg_low_quality=False, jp2=False, ocr=True, hocr=True):
+    def make_page_derivatives(self, fits=True, tn=True, islandora_jpg=True, jpeg_high_quality=False, jpeg_low_quality=False, jp2=False, ocr=True, hocr=True):
         self.tn = tn
         self.islandora_jpg = islandora_jpg
         self.jpeg_low_quality = jpeg_low_quality
@@ -22,13 +23,19 @@ class GrangeDerivatives():
         self.hocr = hocr
 
         image_methods = [tn, islandora_jpg, jpeg_high_quality, jpeg_low_quality, jp2]
+        for image_file in self._files_to_process:
+            print "Processing derivatives for {0}".format(image_file)
 
-        if any(image_methods):
-            for image_file in self._files_to_process:
+            if fits:
+
+                self.__fits(image_file)
+            
+            if any(image_methods):
+                
                 self.__convert_images(image_file)
 
-        if ocr or hocr:
-            for image_file in self.__files_to_process:
+            if ocr or hocr:
+
                 self.__ocr_text(image_file)
 
 
@@ -38,11 +45,11 @@ class GrangeDerivatives():
         image_convertor = ImageMagickConverter()
 
         if self.tn:
-            image_output = os.path.splitext(image_input)[0]+"_TN.jpg".replace("TIFFs", "TNs")
+            image_output = (os.path.splitext(image_input)[0]+"_TN.jpg").replace("TIFFs", "TNs")
             image_convertor.convert_thumbnail(image_input, image_output)
 
         if self.islandora_jpg:
-            image_output = os.path.splitext(image_input)[0]+"_JPG.jpg".replace("TIFFs", "JPGs")
+            image_output = (os.path.splitext(image_input)[0]+"_JPG.jpg").replace("TIFFs", "JPGs")
             image_convertor.convert_islandora_jpg(image_input, image_output)
 
     def __ocr_text(self, image_file):
@@ -53,6 +60,11 @@ class GrangeDerivatives():
 
         if self.hocr:
             ocr_text.get_text(config_file="hocr")
+
+    def __fits(self, image_file):
+
+        f = Fits(image_file)
+        f.get_fits()
 
 
     def __get_files(self):
