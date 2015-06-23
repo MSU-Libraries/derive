@@ -45,30 +45,30 @@ class GrangeDerivatives():
         image_convertor = ImageMagickConverter()
 
         if self.tn:
-            image_output = "/Users/higgi135/Data/grange/TN/"+os.path.splitext(os.path.split(image_input)[1])[0]+"_TN.jpg"
+            image_output = os.path.join(self.grange_dir, "TN")+os.path.splitext(os.path.split(image_input)[1])[0]+"_TN.jpg"
             image_convertor.convert_thumbnail(image_input, image_output)
 
         if self.jp2:
-            image_output = "/Users/higgi135/Data/grange/JP2/"+os.path.splitext(os.path.split(image_input)[1])[0]+"_JP2.jp2"
+            image_output = os.path.join(self.grange_dir, "JP2")+os.path.splitext(os.path.split(image_input)[1])[0]+"_JP2.jp2"
             image_convertor.convert_jp2(image_input, image_output)
 
         if self.jpeg_low_quality:
-            image_output = "/Users/higgi135/Data/grange/JPG/"+os.path.splitext(os.path.split(image_input)[1])[0]+"_JPG_LOW.jpg"
+            image_output = os.path.join(self.grange_dir, "JPG")+os.path.splitext(os.path.split(image_input)[1])[0]+"_JPG_LOW.jpg"
             image_convertor.convert_jpeg_low(image_input, image_output)
 
     def __ocr_text(self, image_file):
 
         ocr_text = Tesseract(image_file)
         if self.ocr:
-            ocr_text.get_text(output_basename="/Users/higgi135/Data/grange/OCR/"+os.path.splitext(os.path.split(image_file)[1])[0])
+            ocr_text.get_text(output_basename=os.path.join(self.grange_dir, "OCR")+os.path.splitext(os.path.split(image_file)[1])[0])
 
         if self.hocr:
-            ocr_text.get_text(output_basename="/Users/higgi135/Data/grange/OCR/"+os.path.splitext(os.path.split(image_file)[1])[0], config_file="hocr")
+            ocr_text.get_text(output_basename=os.path.join(self.grange_dir, "OCR")+os.path.splitext(os.path.split(image_file)[1])[0], config_file="hocr")
 
     def __fits(self, image_file):
 
         f = Fits(image_file)
-        f.get_fits(output_file="/Users/higgi135/Data/grange/FITS/"+os.path.splitext(os.path.split(image_file)[1])[0])
+        f.get_fits(output_file=os.path.join(self.grange_dir, "FITS")+os.path.splitext(os.path.split(image_file)[1])[0])
 
 
     def __get_files(self):

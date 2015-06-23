@@ -5,7 +5,9 @@ from ConfigParser import ConfigParser
 class Derivatives():
 
     def __init__(self):
-        pass
+        
+        self.config_section = "dirs"
+        self.get_configs()
 
     def run_cmds(self):
         process = 1
