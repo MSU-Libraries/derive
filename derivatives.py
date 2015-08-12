@@ -42,6 +42,7 @@ class Derivatives():
     def run_cmds(self):
         process = 1
         try:
+            print self.cmds
             process = subprocess.check_call(self.cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         except Exception as e:

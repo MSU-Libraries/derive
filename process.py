@@ -33,18 +33,31 @@ from tesseract import Tesseract
 from fits import Fits
 import os
 
-class GrangeDerivatives():
-    def __init__(self, grange_image_dir, filetype="tif"):
-        self.grange_image_dir = grange_image_dir
-        self.grange_dir = grange_image_dir
+class ImageDerivatives():
+    """Pull together a set of methods for creating derivatives of image files, usually TIFFs."""
+
+    def __init__(self, project_dir, filetype="tif"):
+        """
+        Initialize processing of project_dir, gathering all files of the specified type.
+
+        Positional arguments:
+        project_dir (str) -- location of all sub-directories, i.e. TIFF, TN, JPG, etc.
+
+        Keyword arguments:
+        filetype (str) -- file type to be collected and processed; only tested with 'tif'
+        """
+        self.project_dir = project_dir
         self.filetype=filetype
         self.__get_files()
 
-    def make_issue_derivatives(self):
-        pass
 
+    def make_image_derivatives(self, fits=False, tn=False, islandora_jpg=False, jpeg_high_quality=False, jpeg_low_quality=False, jp2=False, ocr=False, hocr=False):
+        """
+        Start processing of derivatives.
 
-    def make_page_derivatives(self, fits=True, tn=True, islandora_jpg=True, jpeg_high_quality=False, jpeg_low_quality=False, jp2=False, ocr=True, hocr=True):
+        Keyword arguments:
+        [all] (bool) -- Specify true for each derivative type to be created.
+        """
         self.tn = tn
         self.islandora_jpg = islandora_jpg
         self.jpeg_low_quality = jpeg_low_quality
@@ -72,40 +85,58 @@ class GrangeDerivatives():
 
 
     def __convert_images(self, image_input):
+        """
+        Container for image->image conversions. 
+
+        Positional arguments:
+        image_input (str) -- this should simply be the filename
+        """
 
         image_convertor = ImageMagickConverter()
 
         if self.tn:
-            image_output = os.path.join(self.grange_dir, "TN")+os.path.splitext(os.path.split(image_input)[1])[0]+"_TN.jpg"
+            image_output = os.path.join(self.project_dir, "TN", os.path.splitext(os.path.split(image_input)[1])[0]+"_TN.jpg")
             image_convertor.convert_thumbnail(image_input, image_output)
 
         if self.jp2:
-            image_output = os.path.join(self.grange_dir.replace("TIFF", "JP2"), os.path.splitext(os.path.split(image_input)[1])[0]+"_JP2.jp2")
+            image_output = os.path.join(self.project_dir, "JP2", os.path.splitext(os.path.split(image_input)[1])[0]+"_JP2.jp2")
             image_convertor.convert_jp2(image_input, image_output)
 
         if self.jpeg_low_quality:
-            image_output = os.path.join(self.grange_dir, "JPG")+os.path.splitext(os.path.split(image_input)[1])[0]+"_JPG_LOW.jpg"
+            image_output = os.path.join(self.project_dir, "JPG", os.path.splitext(os.path.split(image_input)[1])[0]+"_JPG_LOW.jpg")
             image_convertor.convert_jpeg_low(image_input, image_output)
 
     def __ocr_text(self, image_file):
+        """
+        Container for image->txt conversions, including OCR and HOCR. 
+
+        Positional arguments:
+        image_file (str) -- this should simply be the filename
+        """
 
         ocr_text = Tesseract(image_file)
         if self.ocr:
-            ocr_text.get_text(output_basename=os.path.join(self.grange_dir, "OCR")+os.path.splitext(os.path.split(image_file)[1])[0])
+            ocr_text.get_text(output_basename=os.path.join(self.project_dir, "OCR")+os.path.splitext(os.path.split(image_file)[1])[0])
 
         if self.hocr:
-            ocr_text.get_text(output_basename=os.path.join(self.grange_dir, "OCR")+os.path.splitext(os.path.split(image_file)[1])[0], config_file="hocr")
+            ocr_text.get_text(output_basename=os.path.join(self.project_dir, "OCR")+os.path.splitext(os.path.split(image_file)[1])[0], config_file="hocr")
 
     def __fits(self, image_file):
+        """
+        Container for image analysis process. 
 
+        Positional arguments:
+        image_file (str) -- this should simply be the filename
+        """
         f = Fits(image_file)
-        f.get_fits(output_file=os.path.join(self.grange_dir, "FITS")+os.path.splitext(os.path.split(image_file)[1])[0])
+        f.get_fits(output_file=os.path.join(self.project_dir, "FITS", os.path.splitext(os.path.split(image_file)[1])[0])+"_FITS.xml"))
 
 
     def __get_files(self):
+        """Traverse the supplied directory from __init__ and find all files matching the specified type (file ending)"""
 
         self._files_to_process = []
-        for root, dirs, files in os.walk(self.grange_image_dir):
+        for root, dirs, files in os.walk(self.project_dir):
             for f in files:
                 if f.endswith(self.filetype):
                     self._files_to_process.append(os.path.join(root, f))
