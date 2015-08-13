@@ -129,14 +129,21 @@ class ImageDerivatives():
         image_file (str) -- this should simply be the filename
         """
         f = Fits(image_file)
-        f.get_fits(output_file=os.path.join(self.project_dir, "FITS", os.path.splitext(os.path.split(image_file)[1])[0])+"_FITS.xml"))
+        f.get_fits(output_file=os.path.join(self.project_dir, "FITS", os.path.splitext(os.path.split(image_file)[1])[0]+"_FITS.xml"))
 
 
     def __get_files(self):
         """Traverse the supplied directory from __init__ and find all files matching the specified type (file ending)"""
 
         self._files_to_process = []
+        # Method for working only with 1 folder.
+        for fp in os.listdir(os.path.join(self.project_dir, "TIFF")):
+        	if fp.endswith(self.filetype):
+        		self._files_to_process.append(os.path.join(self.project_dir, "TIFF", fp))
+        # Method for traversing a tree to get all files. 
+        """
         for root, dirs, files in os.walk(self.project_dir):
             for f in files:
                 if f.endswith(self.filetype):
                     self._files_to_process.append(os.path.join(root, f))
+        """
