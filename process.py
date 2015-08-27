@@ -32,6 +32,7 @@ from im import ImageMagickConverter
 from tesseract import Tesseract
 from fits import Fits
 import os
+import re
 
 class ImageDerivatives():
     """Pull together a set of methods for creating derivatives of image files, usually TIFFs."""
@@ -106,12 +107,13 @@ class ImageDerivatives():
             image_output = os.path.join(self.project_dir, "JPG", os.path.splitext(os.path.split(image_input)[1])[0]+"_JPG_LOW.jpg")
             image_convertor.convert_jpeg_low(image_input, image_output)
 
-    def __ocr_text(self, image_file):
+    def __ocr_text(self, image_file, remove_dtd=True):
         """
         Container for image->txt conversions, including OCR and HOCR. 
 
         Positional arguments:
         image_file (str) -- this should simply be the filename
+        remove_dtd (bool) -- the presence of a DTD URL to resolve disrupts the xalan XSLT transformation that Gsearch uses; use this parameter to remove the DTD reference.
         """
 
         ocr_text = Tesseract(image_file)
@@ -120,6 +122,12 @@ class ImageDerivatives():
 
         if self.hocr:
             ocr_text.get_text(output_basename=os.path.join(self.project_dir, "OCR")+os.path.splitext(os.path.split(image_file)[1])[0], config_file="hocr")
+            if remove_dtd:
+                with open(os.path.join(self.project_dir, "OCR", os.path.splitext(os.path.split(image_file)[1])[0]+".html"), "r") as input_file:
+                    text = input_file.read()
+            
+                with open(os.path.join(self.project_dir, "OCR", os.path.splitext(os.path.split(image_file)[1])[0]+".html"), "w") as output_file:
+                    output_file.write(re.sub(r'<!DOCTYPE.*?>', "<!DOCTYPE html>", text, flags=re.DOTALL))
 
     def __fits(self, image_file):
         """
