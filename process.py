@@ -1,33 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-COPYRIGHT © 2015
-MICHIGAN STATE UNIVERSITY BOARD OF TRUSTEES
-ALL RIGHTS RESERVED
- 
-PERMISSION IS GRANTED TO USE, COPY, CREATE DERIVATIVE WORKS AND REDISTRIBUTE
-THIS SOFTWARE AND SUCH DERIVATIVE WORKS FOR ANY PURPOSE, SO LONG AS THE NAME
-OF MICHIGAN STATE UNIVERSITY IS NOT USED IN ANY ADVERTISING OR PUBLICITY
-PERTAINING TO THE USE OR DISTRIBUTION OF THIS SOFTWARE WITHOUT SPECIFIC,
-WRITTEN PRIOR AUTHORIZATION.  IF THE ABOVE COPYRIGHT NOTICE OR ANY OTHER
-IDENTIFICATION OF MICHIGAN STATE UNIVERSITY IS INCLUDED IN ANY COPY OF ANY
-PORTION OF THIS SOFTWARE, THEN THE DISCLAIMER BELOW MUST ALSO BE INCLUDED.
- 
-THIS SOFTWARE IS PROVIDED AS IS, WITHOUT REPRESENTATION FROM MICHIGAN STATE
-UNIVERSITY AS TO ITS FITNESS FOR ANY PURPOSE, AND WITHOUT WARRANTY BY
-MICHIGAN STATE UNIVERSITY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
-WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE. THE MICHIGAN STATE UNIVERSITY BOARD OF TRUSTEES SHALL
-NOT BE LIABLE FOR ANY DAMAGES, INCLUDING SPECIAL, INDIRECT, INCIDENTAL, OR
-CONSEQUENTIAL DAMAGES, WITH RESPECT TO ANY CLAIM ARISING OUT OF OR IN
-CONNECTION WITH THE USE OF THE SOFTWARE, EVEN IF IT HAS BEEN OR IS HEREAFTER
-ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
- 
-Written by Devin Higgins, 2015
-(c) Michigan State University Board of Trustees
-Licensed under GNU General Public License (GPL) Version 2.
-"""
 from im import ImageMagickConverter
 from tesseract import Tesseract
 from fits import Fits
@@ -37,18 +10,20 @@ import re
 class ImageDerivatives():
     """Pull together a set of methods for creating derivatives of image files, usually TIFFs."""
 
-    def __init__(self, project_dir, filetype="tif"):
+    def __init__(self, project_dir, filetype="tif", flat_dir=True):
         """
         Initialize processing of project_dir, gathering all files of the specified type.
 
         Positional arguments:
-        project_dir (str) -- location of all sub-directories, i.e. TIFF, TN, JPG, etc.
+        project_dir (str) -- location of all sub-directories, i.e. TIFF, TN, JPG, etc, or parent directory of all files to be processed, if flat_dir is False.
 
         Keyword arguments:
         filetype (str) -- file type to be collected and processed; only tested with 'tif'
+        flat_dir (bool) -- set flat_dir to true if all files are found in the specified directory, not subfolders; otherwise, set to false.
         """
         self.project_dir = project_dir
         self.filetype=filetype
+        self.flat_dir = flat_dir
         self.__get_files()
 
 
@@ -90,21 +65,28 @@ class ImageDerivatives():
         Container for image->image conversions. 
 
         Positional arguments:
-        image_input (str) -- this should simply be the filename
+        image_input (str) -- this should simply be the filename (not full path)
         """
 
         image_convertor = ImageMagickConverter()
 
+        # Get the path and 'basename' of the file, i.e. the filename sans extension.
+        self.derivative_path, derivative_filename = os.path.split(image_input)
+        self.derivative_basename = os.path.splitext(derivative_filename)[0]
+        
         if self.tn:
-            image_output = os.path.join(self.project_dir, "TN", os.path.splitext(os.path.split(image_input)[1])[0]+"_TN.jpg")
+            
+            image_output = self.__get_output_path("TN")
             image_convertor.convert_thumbnail(image_input, image_output)
 
         if self.jp2:
-            image_output = os.path.join(self.project_dir, "JP2", os.path.splitext(os.path.split(image_input)[1])[0]+"_JP2.jp2")
+            
+            image_output = self.__get_output_path("JP2")
             image_convertor.convert_jp2(image_input, image_output)
 
         if self.jpeg_low_quality:
-            image_output = os.path.join(self.project_dir, "JPG", os.path.splitext(os.path.split(image_input)[1])[0]+"_JPG_LOW.jpg")
+    
+            image_output = self.__get_output_path("JPG")
             image_convertor.convert_jpeg_low(image_input, image_output)
 
     def __ocr_text(self, image_file, remove_dtd=True):
@@ -145,13 +127,35 @@ class ImageDerivatives():
 
         self._files_to_process = []
         # Method for working only with 1 folder.
-        for fp in os.listdir(os.path.join(self.project_dir, "TIFF")):
-        	if fp.endswith(self.filetype):
-        		self._files_to_process.append(os.path.join(self.project_dir, "TIFF", fp))
+        if self.flat_dir:
+            for fp in os.listdir(os.path.join(self.project_dir, "TIFF")):
+            	if fp.endswith(self.filetype):
+            		self._files_to_process.append(os.path.join(self.project_dir, "TIFF", fp))
         # Method for traversing a tree to get all files. 
+        else:
+            for root, dirs, files in os.walk(self.project_dir):
+                for f in files:
+                    if f.endswith(self.filetype):
+                        self._files_to_process.append(os.path.join(root, f))
+        
+
+    def __get_output_path(self, deriv_type):
         """
-        for root, dirs, files in os.walk(self.project_dir):
-            for f in files:
-                if f.endswith(self.filetype):
-                    self._files_to_process.append(os.path.join(root, f))
+        Return output path for derivative file.
+
+        args:
+        deriv_type (str) -- shorthand for type of derivative, e.g. "TN", "JPG", "JP2", etc.
         """
+        deriv_suffix = {
+                        "TN":"_TN.jpg",
+                        "JPG":"_JPG.jpg",
+                        "JP2":"_JP2.jpg",
+        }
+
+        if self.flat_dir:
+            path_args = [self.derivative_path, deriv_type, self.derivative_basename+deriv_suffix[deriv_type]]
+
+        else:
+            path_args = [self.derivative_path, self.derivative_basename+deriv_suffix[deriv_type]]
+
+        return os.path.join(*path_args)
