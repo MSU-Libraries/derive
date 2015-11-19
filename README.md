@@ -43,18 +43,3 @@ In this example, `flat_dir` is set to false, meaning all files that end with `.t
     from process import ImageDerivatives
     imd = ImageDerivatives("/Volumes/fedcom_ingest/MICHILAC/batch 1/msuspccls_btn_cmp/cmp2/Cropped", flat_dir=False)
     imd.make_image_derivatives(jp2=True, tn=True, jpeg_low_quality=True)
-
-####Hopefully this won't be needed again!
-Code to remove the `doctype` declaration from all `HOCR` files. This `DTD` reference was interfering with the `Gsearch` transformation (using `xalan`), causing it to take 1 second for every page.
-
-
-    import os
-    import re
-    base_path = "/Volumes/fedcom_ingest/GrangeVisitor/OCR"
-    files = [f for f in os.listdir(base_path) if f.endswith("html")]
-    for f in files:
-        with open(os.path.join(base_path, f), "r") as input_file:
-            text = input_file.read()
-            
-        with open(os.path.join(base_path, f), "w") as output_file:
-            output_file.write(re.sub(r'<!DOCTYPE.*?>', "<!DOCTYPE html>", text, flags=re.DOTALL))
