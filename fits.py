@@ -1,35 +1,42 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+"""Build and run FITS commands."""
 
 import os
-import subprocess
 from derivatives import Derivatives
+
 
 class Fits(Derivatives):
 
-    def __init__(self, file_path):
+    """Build and run FITS commands."""
 
+    def __init__(self, file_path):
+        """Initiate with file to process.
+
+        args:
+            file_path(str): path to file to run FITS on.
+        """
         self.file_path = file_path
         self.config_section = "fits"
         self.get_configs()
 
     def get_fits(self, output_file=None):
-        """
-        Generate fits output. Give fits_location the location of fits.sh
+        """Generate fits output.
+
+        kwargs:
+            output_file(str): location to store output, defaults to input path.
         """
         self.name = "FITS"
         self.output_file = output_file
         if not self.output_file:
-            self.output_file = os.path.join(os.path.split(self.file_path)[0], 'fits.xml').replace("TIFFs", "FITS")
-    
-        self.cmds = (self.fits_commands.replace("fits_location", self.fits_location).replace("file_path", self.file_path).replace("output_file", self.output_file)).split()
-        self.print_process()
+            output_file_path = os.path.split(self.file_path)[0]\
+                                      .replace("TIFFs", "FITs")
+            self.output_file = os.path.join(output_file_path, 'fits.xml')
+        self.cmds = self._create_cmds_fits(self.fits_commands, self.file_path,
+                                          self.output_file)
+
         self.return_code = self.run_cmds()
-        
         if self.return_code == 1:
-            self.cmds = (self.fits_commands_alt.replace("fits_location", self.fits_location).replace("file_path", self.file_path).replace("output_file", self.output_file)).split()
+            self.cmds = self._create_cmds_fits(self.fits_commands_alt,
+                                              self.file_path, self.output_file)
             self.return_code = self.run_cmds()
 
         self.print_output()
-
-
