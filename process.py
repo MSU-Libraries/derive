@@ -159,7 +159,8 @@ class ImageDerivatives():
         Return output path for derivative file.
 
         args:
-        deriv_type (str) -- shorthand for type of derivative, e.g. "TN", "JPG", "JP2", etc.
+        deriv_type (str) -- shorthand for type of derivative,
+            e.g. "TN", "JPG", "JP2", etc.
         """
         deriv_suffix = {"TN": "_TN.jpg",
                         "JPG": "_JPG.jpg",
