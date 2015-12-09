@@ -163,7 +163,7 @@ class ImageDerivatives():
         """
         deriv_suffix = {"TN": "_TN.jpg",
                         "JPG": "_JPG.jpg",
-                        "JP2": "_JP2.jpg",
+                        "JP2": "_JP2.jp2",
                         "HI_JPG": "_JPG_HIGH.jpg",
                         "FITS": "_FITS.xml"}
 
