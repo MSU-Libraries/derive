@@ -3,7 +3,7 @@ from im import ImageMagickConverter
 from tesseract import Tesseract
 from fits import Fits
 import os
-import re
+import refrom datetime import datetime
 
 
 class ImageDerivatives():
@@ -33,6 +33,7 @@ class ImageDerivatives():
         self.exclude_string = exclude_string
         self.__get_files()
 
+
     def make_image_derivatives(self, fits=False, tn=False, islandora_jpg=False,
                                jpeg_high_quality=False, jpeg_low_quality=False,
                                jp2=False, ocr=False, hocr=False):
@@ -51,7 +52,7 @@ class ImageDerivatives():
         self.hocr = hocr
         image_methods = [tn, islandora_jpg, jpeg_high_quality,
                          jpeg_low_quality, jp2]
-        for image_file in self._files_to_process:
+        for idx, image_file in self._files_to_process:
             print "Processing derivatives for {0}".format(image_file)
 
             # Get the path and 'basename' of the file,
@@ -70,15 +71,22 @@ class ImageDerivatives():
             if ocr or hocr:
 
                 self.__ocr_text(image_file)
+        sucessfulObjects =   idx+1
+        failedObjects = 0
+        con = lite.connect('/var/www/repo-ingest/db.sqlite3')
+        cur = con.cursor()
+        cur.execute("UPDATE eulcom_jobstatus SET success_objects = ? WHERE Pid = ?" ,(sucessfulObjects, self.pidspace))
+        cur.execute("UPDATE eulcom_jobstatus SET failed_objects = ? WHERE Pid = ?" ,(failedObjects, self.pidspace))
+        cur.execute("UPDATE eulcom_jobstatus SET jobCompletedTimeStamp=?  WHERE Pid = ?",(datetime.now(), self.pidspace))
+        con.commit()
+        con.close()
 
 
-    def returnTotalObjects(self):
-        """
-        returns the total number of objects to be ingested to show in the job submitted page
-        """
+    def get_Pid(self, pid):
 
-        length = len(self._files_to_process)
-        return length
+         """To store pid for updating the sucessful objects in sqlite database
+         """
+         self.pidspace = pid
 
     def _convert_images(self, image_input):
         """Container for image->image conversions.
