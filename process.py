@@ -3,7 +3,9 @@ from im import ImageMagickConverter
 from tesseract import Tesseract
 from fits import Fits
 import os
-import refrom datetime import datetime
+import re
+import sqlite3 as lite
+from datetime import datetime
 
 
 class ImageDerivatives():
