@@ -71,6 +71,15 @@ class ImageDerivatives():
 
                 self.__ocr_text(image_file)
 
+
+    def returnTotalObjects(self):
+        """
+        returns the total number of objects to be ingested to show in the job submitted page
+        """
+
+        length = len(self._files_to_process)
+        return length
+
     def _convert_images(self, image_input):
         """Container for image->image conversions.
 
