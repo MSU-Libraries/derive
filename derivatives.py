@@ -23,7 +23,7 @@ class Derivatives():
                                             stderr=subprocess.PIPE)
 
         except Exception as e:
- 
+
             print e
 
         finally:
