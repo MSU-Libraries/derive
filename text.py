@@ -36,7 +36,6 @@ class PdfText(Derivatives):
         """Init."""
         pass
 
-    @staticmethod
     def get_text(self, file_path):
         """Run with config_file='hocr' for output in HTML.
 

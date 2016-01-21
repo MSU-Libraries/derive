@@ -65,8 +65,8 @@ class Derivatives():
         """
         input_file_clean = input_file.replace(" ", "|||")
         output_file_clean = output_file.replace(" ", "|||")
-        cmds = base_cmd.replace("image.tif", input_file_clean)\
-                       .replace("image.jpg", output_file_clean).split()
+        cmds = base_cmd.replace("input_file", input_file_clean)\
+                       .replace("output_file", output_file_clean).split()
         return [c.replace("|||", " ") for c in cmds]
 
     def _create_cmds_fits(self, base_cmd, input_file, output_file):

@@ -54,15 +54,15 @@ class ImageMagickConverter(Derivatives):
     def convert_pdf_preview(self, input_file, output_jpg):
         """Protocol for conversion."""
         self.name = "PREVIEW conversion"
-        self.cmds = self._create_cmds(self.pdf_preview, input_file, output_jpg)
+        self.cmds = self._create_cmds(self.pdf_preview, input_file+"[0]", output_jpg)
         self.print_process()
         self.return_code = self.run_cmds()
         self.print_output()
 
     def convert_pdf_tn(self, input_file, output_jpg):
         """Protocol for conversion."""
-        self.name = "PREVIEW conversion"
-        self.cmds = self._create_cmds(self.pdf_tn, input_file, output_jpg)
+        self.name = "Thumbnail conversion"
+        self.cmds = self._create_cmds(self.pdf_tn, input_file+"[0]", output_jpg)
         self.print_process()
         self.return_code = self.run_cmds()
         self.print_output()

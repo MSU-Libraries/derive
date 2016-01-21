@@ -6,6 +6,13 @@ import os
 import re
 import sqlite3 as lite
 from datetime import datetime
+import logging
+import zipfile
+import time
+import subprocess
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class ProcessDerivatives():
@@ -29,10 +36,10 @@ class ProcessDerivatives():
         update_database(bool): for use with django: update sqlite3 database.
         """
         self.project_dir = project_dir
-        self.update_database
+        self.update_database = update_database
         self.filetype = filetype.lower()
-        self.flat_dir = flat_dir.lower()
-        self.exclude_string = exclude_string
+        self.flat_dir = flat_dir
+        self.exclude_string = exclude_string.lower()
 
     def get_files(self):
         """Make list of files to process.
@@ -75,11 +82,11 @@ class ProcessDerivatives():
             pdf_input(str): path to pdf file
 
         """
-        pdf_convertor = ImageMagickConverter()
+        pdf_convertor = ImageMagickConverter(image_type="pdf")
         if self.tn:
 
             image_output = self._get_output_path("_TN.jpg")
-            pdf_convertor.convert_pdf_thumbnail(pdf_input, image_output)
+            pdf_convertor.convert_pdf_tn(pdf_input, image_output)
             self.derive_results.append(pdf_convertor.return_code)
 
         if self.preview:
@@ -87,6 +94,22 @@ class ProcessDerivatives():
             image_output = self._get_output_path("_PREVIEW.jpg")
             pdf_convertor.convert_pdf_preview(pdf_input, image_output)
             self.derive_results.append(pdf_convertor.return_code)
+
+    def _unzip(self, zip_path, unzip_path):
+        """Unzip.
+
+        args:
+            zip_path(str): path to zip file.
+            unzip_path(str): destination to unzip to.
+        """
+        try:
+            unzip_cmds = ['unzip', zip_path, '-d', unzip_path]
+            subprocess.check_call(unzip_cmds)
+        except Exception as e:
+            print "***Failed unzip at {0} with error:".format(zip_path)
+            print e
+        # z = zipfile.ZipFile(zip_path)
+        # z.extractall(unzip_path)
 
     def _convert_images(self, image_input):
         """Container for image->image conversions.
@@ -130,6 +153,68 @@ class PdfDerivatives(ProcessDerivatives):
 
     """Methods for creating derivatives of PDF objects."""
 
+    def __init__(self, etd_dir, etd_deriv_dir=None, unzip_files=False,
+                 update_database=False):
+        """Initiate ProcessDerivatives and prepare for derivatives.
+
+        args:
+            etd_dir(str): path to zipped ETDs.
+
+        kwargs:
+            etd_deriv_dir(str): path to place unzipped ETDs with derivative files;
+                must be supplied if 'unzip_file' is set to True.
+            unzip_files(bool): Check ETD directory for files to unzip_files
+                before generating derivatives.
+        """
+        ProcessDerivatives.__init__(self, etd_deriv_dir, filetype="pdf",
+                                    update_database=update_database)
+        self.etd_dir = etd_dir
+        self.etd_deriv_dir = etd_deriv_dir
+        if unzip_files:
+            self._unzip_etds()
+
+    def _unzip_etds(self):
+        """Check to unzipped ETDs and unzip."""
+        index = 0
+        for etdzip in os.listdir(self.etd_dir):
+            if etdzip.endswith("zip"):
+                index += 1
+                self._check_for_etd(etdzip)
+        logging.debug("Completed processing {0} ETDs".format(index))
+
+    def _check_for_etd(self, etdzip):
+        """Look for ETD zip in ETD derivatives directory.
+
+        args:
+            etdzip(str): ETD zipfilename.
+        """
+        etd_name = os.path.splitext(etdzip)[0]
+        zip_path = os.path.join(self.etd_dir, etdzip)
+        zip_year = self._get_year(zip_path)
+        unzip_path = os.path.join(self.etd_deriv_dir,
+                                  zip_year,
+                                  etd_name)
+
+        if not os.path.exists(unzip_path):
+
+            self._unzip(zip_path, unzip_path)
+            print "Unzipped {0}".format(zip_path)
+
+        else:
+            print "Files already exists for {0}; Skipping.".format(zip_path)
+
+    def _get_year(self, file_path):
+        """Get year created for each ETD.
+
+        args:
+            zip_path(str): full path to file
+
+        returns:
+            year(str): the year the file was created
+        """
+        seconds_since_epoch = os.path.getctime(file_path)
+        return str(time.localtime(seconds_since_epoch)[0])
+
     def make_pdf_derivatives(self, fits=False, tn=False, preview=False,
                              pdf2text=False, ocr=False, hocr=False):
         """
@@ -144,6 +229,8 @@ class PdfDerivatives(ProcessDerivatives):
         self.pdf2text = pdf2text
         self.ocr = ocr
         self.hocr = hocr
+        failed_objects = 0
+        successful_objects = 0
         for pdf in self.get_files():
             print "Processing derivatives for {0}".format(pdf)
             # Get the path and 'basename' of the file,
@@ -160,7 +247,7 @@ class PdfDerivatives(ProcessDerivatives):
 
             if tn or preview:
 
-                self.__convert_pdf_images(pdf)
+                self._convert_pdf_images(pdf)
 
             if ocr or hocr:
 
@@ -168,7 +255,8 @@ class PdfDerivatives(ProcessDerivatives):
 
             if pdf2text:
 
-                PdfText.get_text(pdf)
+                pdft = PdfText()
+                pdft.get_text(pdf)
 
             if any(self.derive_results):
                 failed_objects += 1
@@ -255,12 +343,9 @@ class ImageDerivatives(ProcessDerivatives):
             con.commit()
             con.close()
 
-
     def get_Pid(self, pid):
-         """To store pid for updating the sucessful objects in sqlite database
-         """
-         self.pidspace = pid
-
+        """To store pid for updating the sucessful objects in sqlite database."""
+        self.pidspace = pid
 
     def _ocr_text(self, image_file, remove_dtd=True):
         """Container for image->txt conversions, including OCR and HOCR.
