@@ -153,7 +153,7 @@ class PdfDerivatives(ProcessDerivatives):
 
     """Methods for creating derivatives of PDF objects."""
 
-    def __init__(self, etd_dir, etd_deriv_dir=None, unzip_files=False,
+    def __init__(self, etd_dir, zipped_etd_dir=None, unzip_files=False,
                  update_database=False):
         """Initiate ProcessDerivatives and prepare for derivatives.
 
@@ -161,22 +161,23 @@ class PdfDerivatives(ProcessDerivatives):
             etd_dir(str): path to zipped ETDs.
 
         kwargs:
-            etd_deriv_dir(str): path to place unzipped ETDs with derivative files;
-                must be supplied if 'unzip_file' is set to True.
+            zipped_etd_dir(str): path to place unzipped ETDs with
+                derivative files; must be supplied if 'unzip_file'
+                is set to True.
             unzip_files(bool): Check ETD directory for files to unzip_files
                 before generating derivatives.
         """
-        ProcessDerivatives.__init__(self, etd_deriv_dir, filetype="pdf",
+        ProcessDerivatives.__init__(self, etd_dir, filetype="pdf",
                                     update_database=update_database)
         self.etd_dir = etd_dir
-        self.etd_deriv_dir = etd_deriv_dir
+        self.zipped_etd_dir = zipped_etd_dir
         if unzip_files:
             self._unzip_etds()
 
     def _unzip_etds(self):
         """Check to unzipped ETDs and unzip."""
         index = 0
-        for etdzip in os.listdir(self.etd_dir):
+        for etdzip in os.listdir(self.zipped_etd_dir):
             if etdzip.endswith("zip"):
                 index += 1
                 self._check_for_etd(etdzip)

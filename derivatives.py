@@ -17,7 +17,7 @@ class Derivatives():
         """Run self.cmds object."""
         process = 1
         try:
-            print "Running: {0}".format(" ".join(self.cmds))
+            # print "Running: {0}".format(" ".join(self.cmds))
             process = subprocess.check_call(self.cmds,
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE)
@@ -43,14 +43,17 @@ class Derivatives():
 
     def print_process(self):
 
-        print "===Starting {0}".format(self.name)
+        pass
+        # print "===Starting {0}".format(self.name)
 
     def print_output(self):
 
         if self.return_code == 0:
-            print "====={0} succeeded".format(self.name)
+            pass
+            # print "====={0} succeeded".format(self.name)
         else:
-            print "====={0} failed".format(self.name)
+            pass
+            # print "====={0} failed".format(self.name)
 
     def _create_cmds(self, base_cmd, input_file, output_file):
         """Combine command string with file input and outputs.
