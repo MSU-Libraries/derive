@@ -52,6 +52,8 @@ class ProcessDerivatives():
                 filepath = os.path.join(root, f)
                 if (f.lower().endswith(self.filetype) and
                    self.exclude_string not in filepath.lower()):
+                    print "Processing {0} at".format(f)
+                    print filepath
                     yield filepath
 
     def _fits(self, image_file):
@@ -86,14 +88,18 @@ class ProcessDerivatives():
         if self.tn:
 
             image_output = self._get_output_path("_TN.jpg")
-            pdf_convertor.convert_pdf_tn(pdf_input, image_output)
-            self.derive_results.append(pdf_convertor.return_code)
+            if not os.path.exists(image_output):
+                print "Creating TN for {0}".format(os.path.basename(pdf_input))
+                pdf_convertor.convert_pdf_tn(pdf_input, image_output)
+                self.derive_results.append(pdf_convertor.return_code)
 
         if self.preview:
 
             image_output = self._get_output_path("_PREVIEW.jpg")
-            pdf_convertor.convert_pdf_preview(pdf_input, image_output)
-            self.derive_results.append(pdf_convertor.return_code)
+            if not os.path.exists(image_output):
+                print "Creating PREVIEW for {0}".format(os.path.basename(pdf_input))
+                pdf_convertor.convert_pdf_preview(pdf_input, image_output)
+                self.derive_results.append(pdf_convertor.return_code)
 
     def _unzip(self, zip_path, unzip_path):
         """Unzip.
@@ -154,7 +160,7 @@ class PdfDerivatives(ProcessDerivatives):
     """Methods for creating derivatives of PDF objects."""
 
     def __init__(self, etd_dir, zipped_etd_dir=None, unzip_files=False,
-                 update_database=False):
+                 update_database=False, exclude_string="*"):
         """Initiate ProcessDerivatives and prepare for derivatives.
 
         args:
@@ -168,7 +174,7 @@ class PdfDerivatives(ProcessDerivatives):
                 before generating derivatives.
         """
         ProcessDerivatives.__init__(self, etd_dir, filetype="pdf",
-                                    update_database=update_database)
+                                    update_database=update_database, exclude_string=exclude_string)
         self.etd_dir = etd_dir
         self.zipped_etd_dir = zipped_etd_dir
         if unzip_files:
@@ -233,7 +239,6 @@ class PdfDerivatives(ProcessDerivatives):
         failed_objects = 0
         successful_objects = 0
         for pdf in self.get_files():
-            print "Processing derivatives for {0}".format(pdf)
             # Get the path and 'basename' of the file,
             # i.e. the filename sans extension
             self.derivative_path, derivative_file = os.path.split(pdf)
@@ -260,7 +265,10 @@ class PdfDerivatives(ProcessDerivatives):
                 pdft.get_text(pdf)
 
             if any(self.derive_results):
+                
                 failed_objects += 1
+                print "Process FAILED for {0}".format(pdf)
+
             else:
                 successful_objects += 1
 
@@ -276,6 +284,8 @@ class PdfDerivatives(ProcessDerivatives):
                         (datetime.now(), self.pidspace))
             con.commit()
             con.close()
+
+        print "Process Complete with: {0} successful objects and {1} failed objects.".format(successful_objects, failed_objects)
 
 
 class ImageDerivatives(ProcessDerivatives):
