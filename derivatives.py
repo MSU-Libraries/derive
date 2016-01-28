@@ -21,7 +21,7 @@ class Derivatives():
             process = subprocess.check_call(self.cmds,
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE)
-
+            # print " ".join(self.cmds)
         except Exception as e:
 
             print e
@@ -43,14 +43,17 @@ class Derivatives():
 
     def print_process(self):
 
-        print "===Starting {0}".format(self.name)
+        pass
+        # print "===Starting {0}".format(self.name)
 
     def print_output(self):
 
         if self.return_code == 0:
-            print "====={0} succeeded".format(self.name)
+            pass
+            # print "====={0} succeeded".format(self.name)
         else:
-            print "====={0} failed".format(self.name)
+            pass
+            # print "====={0} failed".format(self.name)
 
     def _create_cmds(self, base_cmd, input_file, output_file):
         """Combine command string with file input and outputs.
@@ -65,8 +68,8 @@ class Derivatives():
         """
         input_file_clean = input_file.replace(" ", "|||")
         output_file_clean = output_file.replace(" ", "|||")
-        cmds = base_cmd.replace("image.tif", input_file_clean)\
-                       .replace("image.jpg", output_file_clean).split()
+        cmds = base_cmd.replace("input_file", input_file_clean)\
+                       .replace("output_file", output_file_clean).split()
         return [c.replace("|||", " ") for c in cmds]
 
     def _create_cmds_fits(self, base_cmd, input_file, output_file):

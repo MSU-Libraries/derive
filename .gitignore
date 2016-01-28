@@ -1,3 +1,5 @@
+test/
+test_unzipped/
 test_files/
 .ipynb_checkpoints/
 *.pyc
