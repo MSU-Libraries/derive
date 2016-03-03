@@ -233,7 +233,9 @@ class PdfDerivatives(ProcessDerivatives):
         failed_objects = 0
         successful_objects = 0
         for pdf in self.get_files():
-            print "Processing derivatives for {0}".format(pdf)
+            if successful_objects % 50 == 0:
+                print "Completed {0} PDFs".format(successful_objects)
+            # print "Processing derivatives for {0}".format(pdf)
             # Get the path and 'basename' of the file,
             # i.e. the filename sans extension
             self.derivative_path, derivative_file = os.path.split(pdf)
@@ -261,6 +263,7 @@ class PdfDerivatives(ProcessDerivatives):
 
             if any(self.derive_results):
                 failed_objects += 1
+                print "Conversion failed for {0}".format(pdf)
             else:
                 successful_objects += 1
 
