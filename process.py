@@ -7,7 +7,6 @@ import re
 import sqlite3 as lite
 from datetime import datetime
 import logging
-import zipfile
 import time
 import subprocess
 
@@ -16,7 +15,6 @@ logger.setLevel(logging.INFO)
 
 
 class ProcessDerivatives():
-
     """Default container class for processing objects."""
 
     def __init__(self, project_dir, filetype="tif", flat_dir=True,
@@ -126,37 +124,39 @@ class ProcessDerivatives():
         image_convertor = ImageMagickConverter()
 
         if self.tn:
-
             image_output = self._get_output_path("_TN.jpg")
-            image_convertor.convert_thumbnail(image_input, image_output)
-            self.derive_results.append(image_convertor.return_code)
+            if not os.path.exists(image_output):
+                image_convertor.convert_thumbnail(image_input, image_output)
+                self.derive_results.append(image_convertor.return_code)
 
         if self.jp2:
-
             image_output = self._get_output_path("_JP2.jp2")
-            image_convertor.convert_jp2(image_input, image_output)
-            self.derive_results.append(image_convertor.return_code)
+            if not os.path.exists(image_output):
+                image_convertor.convert_jp2(image_input, image_output)
+                self.derive_results.append(image_convertor.return_code)
 
         if self.jpeg_low_quality:
 
             image_output = self._get_output_path("_JPG_LOW.jpg")
-            image_convertor.convert_jpeg_low(image_input, image_output)
-            self.derive_results.append(image_convertor.return_code)
+            if not os.path.exists(image_output):
+                image_convertor.convert_jpeg_low(image_input, image_output)
+                self.derive_results.append(image_convertor.return_code)
 
         if self.jpeg_high_quality:
 
-            image_output = self.__get_output_path("_JPG_HIGH.jpg")
-            image_convertor.convert_jpeg_high(image_input, image_output)
-            self.derive_results.append(image_convertor.return_code)
+            image_output = self._get_output_path("_JPG_HIGH.jpg")
+            if not os.path.exists(image_output):
+                image_convertor.convert_jpeg_high(image_input, image_output)
+                self.derive_results.append(image_convertor.return_code)
 
         if self.preview:
-            image_output = self.__get_output_path("_PREVIEW.jpg")
-            image_convertor.convert_preview(image_input, image_output)
-            self.derive_results.append(image_convertor.return_code)
+            image_output = self._get_output_path("_PREVIEW.jpg")
+            if not os.path.exists(image_output):
+                image_convertor.convert_preview(image_input, image_output)
+                self.derive_results.append(image_convertor.return_code)
 
 
 class PdfDerivatives(ProcessDerivatives):
-
     """Methods for creating derivatives of PDF objects."""
 
     def __init__(self, etd_dir, zipped_etd_dir=None, unzip_files=False,
@@ -268,7 +268,6 @@ class PdfDerivatives(ProcessDerivatives):
                 pdft.get_text(pdf)
 
             if any(self.derive_results):
-                
                 failed_objects += 1
                 print "Conversion failed for {0}".format(pdf)
             else:
@@ -291,7 +290,6 @@ class PdfDerivatives(ProcessDerivatives):
 
 
 class ImageDerivatives(ProcessDerivatives):
-
     """Methods for creating derivatives of image files, usually TIFFs."""
 
     def make_image_derivatives(self, fits=False, tn=False, islandora_jpg=False,
@@ -380,6 +378,5 @@ class ImageDerivatives(ProcessDerivatives):
             if remove_dtd:
                 with open(os.path.join(self.project_dir, "OCR", os.path.splitext(os.path.split(image_file)[1])[0]+".html"), "r") as input_file:
                     text = input_file.read()
-            
                 with open(os.path.join(self.project_dir, "OCR", os.path.splitext(os.path.split(image_file)[1])[0]+".html"), "w") as output_file:
                     output_file.write(re.sub(r'<!DOCTYPE.*?>', "<!DOCTYPE html>", text, flags=re.DOTALL))
