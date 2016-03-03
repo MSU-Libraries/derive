@@ -1,6 +1,7 @@
 """Text extraction class(es)."""
 from derivatives import Derivatives
 from PyPDF2 import PdfFileReader
+import os
 
 class Tesseract(Derivatives):
 
@@ -44,15 +45,16 @@ class PdfText(Derivatives):
         """
         full_text = ""
         full_text_file_location = file_path.replace(".pdf", ".txt")
-        try:
-            with open(file_path, "rb") as f:
-                a = PdfFileReader(f)
-                for i in range(a.getNumPages()):
-                    full_text += a.getPage(i).extractText()
-            with open(full_text_file_location, "w") as f:
-                f.write(full_text.encode("UTF-8"))
-            self.return_code = 0
+        if not os.path.exists(full_text_file_location):
+            try:
+                with open(file_path, "rb") as f:
+                    a = PdfFileReader(f)
+                    for i in range(a.getNumPages()):
+                        full_text += a.getPage(i).extractText()
+                with open(full_text_file_location, "w") as f:
+                    f.write(full_text.encode("UTF-8"))
+                self.return_code = 0
 
-        except Exception as e:
-            self.return_code = 1
-            print "Error: ".format(e)
+            except Exception as e:
+                self.return_code = 1
+                print "Error: ".format(e)

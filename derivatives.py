@@ -17,11 +17,11 @@ class Derivatives():
         """Run self.cmds object."""
         process = 1
         try:
-            # print "Running: {0}".format(" ".join(self.cmds))
+            print "Running: {0}".format(" ".join(self.cmds))
             process = subprocess.check_call(self.cmds,
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE)
-
+            # print " ".join(self.cmds)
         except Exception as e:
 
             print e
