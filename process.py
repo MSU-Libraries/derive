@@ -62,8 +62,11 @@ class ProcessDerivatives():
         image_file (str) -- filename with path.
         """
         f = Fits(image_file)
-        f.get_fits(output_file=self._get_output_path("_FITS.xml"))
-        self._fits_result = f.return_code
+        fits_output = self._get_output_path("_FITS.xml")
+        if not os.path.exists(fits_output):
+            f.get_fits(output_file=fits_output)
+            self._fits_result = f.return_code
+            self.derive_results.append(self._fits_result)
 
     def _get_output_path(self, deriv_suffix):
         """
@@ -252,7 +255,6 @@ class PdfDerivatives(ProcessDerivatives):
             if fits:
 
                 self._fits(pdf)
-                self.derive_results.append(self._fits_result)
 
             if tn or preview:
 
@@ -294,7 +296,7 @@ class ImageDerivatives(ProcessDerivatives):
 
     def make_image_derivatives(self, fits=False, tn=False, islandora_jpg=False,
                                jpeg_high_quality=False, jpeg_low_quality=False,
-                               jp2=False, ocr=False, hocr=False):
+                               jp2=False, ocr=False, hocr=False, preview=False):
         """
         Start processing of derivatives.
 
@@ -308,12 +310,13 @@ class ImageDerivatives(ProcessDerivatives):
         self.jp2 = jp2
         self.ocr = ocr
         self.hocr = hocr
+        self.preview = preview
         image_methods = [tn, islandora_jpg, jpeg_high_quality,
                          jpeg_low_quality, jp2]
 
         successful_objects = 0
         failed_objects = 0
-        for image_file in self.get_files:
+        for image_file in self.get_files():
             print "Processing derivatives for {0}".format(image_file)
 
             # Get the path and 'basename' of the file,
@@ -326,7 +329,6 @@ class ImageDerivatives(ProcessDerivatives):
             if fits:
 
                 self._fits(image_file)
-                self.derive_results.append(self._fits_result)
 
             if any(image_methods):
 
@@ -338,6 +340,7 @@ class ImageDerivatives(ProcessDerivatives):
 
             if any(self.derive_results):
                 failed_objects += 1
+            
             else:
                 successful_objects += 1
 
