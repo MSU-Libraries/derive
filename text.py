@@ -30,7 +30,6 @@ class Tesseract(Derivatives):
 
 
 class PdfText(Derivatives):
-
     """Extract text from PDF."""
 
     def __init__(self):
@@ -48,7 +47,7 @@ class PdfText(Derivatives):
         if not os.path.exists(full_text_file_location):
             try:
                 with open(file_path, "rb") as f:
-                    a = PdfFileReader(f)
+                    a = PdfFileReader(f, strict=False)
                     for i in range(a.getNumPages()):
                         full_text += a.getPage(i).extractText()
                 with open(full_text_file_location, "w") as f:
